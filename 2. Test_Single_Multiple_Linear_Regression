@@ -1,0 +1,28 @@
+# Load required packages
+library(tidyverse)
+
+# Fit single linear regression model
+model_single <- lm(completion_time ~ project_budget, data = data)
+
+# Single linear regression summary
+summary_single <- summary(model_single)
+print(summary_single)
+
+# Interpretation of single linear regression summary:
+# The p-value for the project_budget variable indicates whether there is a statistically significant relationship
+# between project_budget and completion_time.
+# If the p-value is less than 0.05, we would conclude that there is a significant relationship between
+# project_budget and completion_time.
+
+# Fit multiple linear regression model
+model_multiple <- lm(completion_time ~ method + project_budget, data = data)
+
+# Multiple linear regression summary
+summary_multiple <- summary(model_multiple)
+print(summary_multiple)
+
+# Interpretation of multiple linear regression summary:
+# The p-values for the method and project_budget variables indicate whether there are statistically significant relationships 
+# between each of these independent variables and completion_time.
+# If the p-value for each variable is less than 0.05, we would conclude that there is a significant relationship between 
+# the independent variable and completion_time.
