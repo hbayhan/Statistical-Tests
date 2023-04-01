@@ -1,0 +1,79 @@
+# Load required packages
+library(tidyverse)
+library(car)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Create dataset
+data <- tibble(
+  project_budget = round(runif(60, min = 100000, max = 500000)),
+  num_workers = round(runif(60, min = 10, max = 40)),
+  completion_time = 120 - 0.0001 * project_budget + 0.1 * num_workers + rnorm(60, mean = 0, sd = 5)
+)
+
+# Inspect the dataset
+head(data)
+
+# Simple linear regression
+model_simple <- lm(completion_time ~ project_budget, data = data)
+
+# Multiple linear regression
+model_multiple <- lm(completion_time ~ project_budget + num_workers, data = data)
+
+# Assumption 1 for linear regression: Linearity
+# Check with scatterplots
+data %>%
+  ggplot(aes(x = project_budget, y = completion_time)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal()
+
+data %>%
+  ggplot(aes(x = num_workers, y = completion_time)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal()
+
+# Assumption 2 for linear regression: Independence of errors
+# Durbin-Watson test (only applicable to time series or spatial data)
+library(lmtest)
+dwtest(model_multiple)
+
+# Assumption 3 for linear regression: Normality of errors
+# Shapiro-Wilk test on residuals
+shapiro.test(resid(model_multiple))
+
+# Q-Q plot of residuals
+qqPlot(model_multiple)
+
+# Assumption 4 for linear regression: Homoscedasticity of errors
+# Check with scale-location plot
+plot(model_multiple, which = 3)
+
+# If assumptions are not met, consider the following:
+# 1. Transform the data (e.g., log, square root) to meet the assumptions
+# 2. Use non-parametric alternatives (e.g., Spearman correlation for simple linear regression)
+
+# Example: Non-parametric alternative to simple linear regression (Spearman correlation)
+cor.test(data$project_budget, data$completion_time, method = "spearman")
+
+# Additional scenarios:
+# Scenario 1: Transform the data
+data_transformed <- data %>%
+  mutate(log_project_budget = log(project_budget),
+         sqrt_num_workers = sqrt(num_workers))
+
+# Re-check assumptions for transformed data
+model_transformed <- lm(completion_time ~ log_project_budget + sqrt_num_workers, data = data_transformed)
+shapiro.test(resid(model_transformed))
+plot(model_transformed, which = 3)
+
+# Scenario 2: Add an outlier to the dataset
+data_with_outlier <- data %>%
+  add_row(project_budget = 600000, num_workers = 50, completion_time = 50)
+
+# Re-check assumptions for data with an outlier
+model_with_outlier <- lm(completion_time ~ project_budget + num_workers, data = data_with_outlier)
+shapiro.test(resid(model_with_outlier))
+plot(model_with_outlier, which = 3)
