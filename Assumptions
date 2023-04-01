@@ -1,0 +1,48 @@
+ANOVA (Analysis of Variance), MANOVA (Multivariate Analysis of Variance), ANCOVA (Analysis of Covariance), MANCOVA (Multivariate Analysis of Covariance), and single and multiple linear regressions are all statistical methods used to analyze data. Each of these techniques has its own set of assumptions that need to be met for the analysis to be valid.
+
+ANOVA:
+Assumptions:
+a. Independence of observations
+b. Normality of the dependent variable within each group
+c. Homogeneity of variances across groups
+Example: Suppose you want to test if different teaching methods affect student exam scores. You have three groups: method A, method B, and method C. You collect exam scores for each student and use ANOVA to test if there are significant differences among the three groups.
+
+MANOVA:
+Assumptions:
+a. Independence of observations
+b. Multivariate normality
+c. Homogeneity of covariance matrices
+Example: Similar to the ANOVA example, but now you have multiple dependent variables like exam scores and class participation. You use MANOVA to test if there are significant differences among the three teaching methods based on both variables.
+
+ANCOVA:
+Assumptions:
+a. Independence of observations
+b. Normality of the dependent variable within each group, given the covariate
+c. Homogeneity of regression slopes
+d. Homogeneity of variances
+Example: You want to test the effect of three teaching methods on student exam scores, while controlling for the effect of student age. You use ANCOVA to determine if there are significant differences among the groups after accounting for the effect of age.
+
+MANCOVA:
+Assumptions:
+a. Independence of observations
+b. Multivariate normality
+c. Homogeneity of regression slopes
+d. Homogeneity of covariance matrices
+Example: Similar to the ANCOVA example, but now you have multiple dependent variables like exam scores and class participation. You use MANCOVA to test if there are significant differences among the three teaching methods based on both variables, after accounting for the effect of student age.
+
+Single Linear Regression:
+Assumptions:
+a. Linearity between the independent variable and the dependent variable
+b. Independence of observations
+c. Normality of the error term
+d. Homoscedasticity (constant variance of errors)
+Example: You want to predict house prices based on square footage. You use single linear regression to model the relationship between these two variables.
+
+Multiple Linear Regression:
+Assumptions:
+a. Linearity between each independent variable and the dependent variable
+b. Independence of observations
+c. Normality of the error term
+d. Homoscedasticity (constant variance of errors)
+e. No or little multicollinearity among independent variables
+Example: You want to predict house prices based on multiple factors like square footage, number of bedrooms, and age of the house. You use multiple linear regression to model the relationship between these variables and the house price.
