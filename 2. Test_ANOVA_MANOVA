@@ -1,0 +1,30 @@
+# Load required packages
+library(tidyverse)
+library(car)
+library(mancova)
+
+# Fit ANOVA model
+model_anova <- aov(completion_time ~ method, data = data)
+
+# ANOVA summary
+summary_anova <- summary(model_anova)
+print(summary_anova)
+
+# Interpretation of ANOVA summary:
+# The p-value for the method variable indicates whether there are statistically significant differences 
+# in completion_time between construction methods A, B, and C.
+# If the p-value is less than 0.05, we would conclude that there is a significant difference in completion_time 
+# between the construction methods.
+
+# Fit MANOVA model
+model_manova <- manova(cbind(completion_time, safety_incidents) ~ method, data = data)
+
+# MANOVA summary
+summary_manova <- summary(model_manova, "Wilks")
+print(summary_manova)
+
+# Interpretation of MANOVA summary:
+# The p-value for the method variable indicates whether there are statistically significant differences 
+# in the combined dependent variables (completion_time and safety_incidents) between construction methods A, B, and C.
+# If the p-value is less than 0.05, we would conclude that there is a significant difference in the combined
+# dependent variables between the construction methods.
