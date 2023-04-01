@@ -10,67 +10,85 @@ set.seed(42)
 # Create dataset
 data <- tibble(
   method = factor(rep(c("A", "B", "C"), each = 20)),
-  exam_score = c(rnorm(20, mean = 80, sd = 5),
-                 rnorm(20, mean = 85, sd = 5),
-                 rnorm(20, mean = 90, sd = 5)),
-  participation_score = c(rnorm(20, mean = 50, sd = 10),
-                          rnorm(20, mean = 60, sd = 10),
-                          rnorm(20, mean = 70, sd = 10))
+  project_budget = round(runif(60, min = 100000, max = 500000)),
+  project_success = c(rnorm(20, mean = 80, sd = 5),
+                      rnorm(20, mean = 85, sd = 5),
+                      rnorm(20, mean = 90, sd = 5)),
+  safety_incidents = c(rnorm(20, mean = 5, sd = 2),
+                       rnorm(20, mean = 3, sd = 2),
+                       rnorm(20, mean = 1, sd = 2))
 )
 
 # Inspect the dataset
 head(data)
 
+# Dependent variable for ANOVA: project_success
+# Independent variable for ANOVA: method (A, B, or C)
+
+# Dependent variables for MANOVA: project_success and safety_incidents
+# Independent variable for MANOVA: method (A, B, or C)
+
 # Assumption 1 for ANOVA: Independence of observations
-# Satisfied by experimental design (students randomly assigned to methods)
+# Satisfied by experimental design (projects randomly assigned to methods)
 
 # Assumption 2 for ANOVA: Normality of dependent variable within each group
 # Shapiro-Wilk test
-by(data$exam_score, data$method, shapiro.test)
+by(data$project_success, data$method, shapiro.test)
 
 # Q-Q plots
 data %>%
-  ggplot(aes(sample = exam_score, color = method)) +
+  ggplot(aes(sample = project_success, color = method)) +
   stat_qq() +
   stat_qq_line() +
   theme_minimal()
 
 # Assumption 3 for ANOVA: Homogeneity of variances across groups
 # Levene's test
-leveneTest(exam_score ~ method, data = data)
+leveneTest(project_success ~ method, data = data)
 
 # Assumption 1 for MANOVA: Independence of observations
-# Satisfied by experimental design (students randomly assigned to methods)
+# Satisfied by experimental design (projects randomly assigned to methods)
 
 # Assumption 2 for MANOVA: Multivariate normality
 # Mardia's test
-mardia <- mardiaTest(data[, c("exam_score", "participation_score")])
+mardia <- mardiaTest(data[, c("project_success", "safety_incidents")])
 mardia
 
 # Assumption 3 for MANOVA: Homogeneity of covariance matrices
 # Modified Box's M test
-modBoxM(data[, c("exam_score", "participation_score")], data$method)
+modBoxM(data[, c("project_success", "safety_incidents")], data$method)
 
 # If assumptions are not met, consider the following:
 # 1. Transform the data (e.g., log, square root) to meet the assumptions
 # 2. Use non-parametric alternatives (e.g., Kruskal-Wallis test for ANOVA)
 
 # Example: Non-parametric alternative to ANOVA
-kruskal.test(exam_score ~ method, data = data)
+kruskal.test(project_success ~ method, data = data)
 
 # Additional scenarios:
 # Scenario 1: Transform the data
 data_transformed <- data %>%
-  mutate(log_exam_score = log(exam_score),
-         sqrt_participation_score = sqrt(participation_score))
+  mutate(log_project_success = log(project_success),
+         sqrt_safety_incidents = sqrt(safety_incidents))
 
 # Re-check assumptions for transformed data
-by(data_transformed$log_exam_score, data_transformed$method, shapiro.test)
+by(data_transformed$log_project_success, data_transformed$method, shapiro.test)
 
 # Scenario 2: Add an outlier to the dataset
 data_with_outlier <- data %>%
-  add_row(method = "A", exam_score = 120, participation_score = 100)
+  add_row(method = "A", project_budget = 600000, project_success = 100, safety_incidents = 15)
 
 # Re-check assumptions for data with an outlier
-by(data_with_outlier$exam_score, data_with_outlier$method, shapiro.test)
-leveneTest(exam_score ~ method, data = data_with_outlier)
+# ANOVA
+by(data_with_outlier$project_success, data_with_outlier$method, shapiro.test)
+leveneTest(project_success ~ method, data = data_with_outlier)
+
+# MANOVA
+mardia_outlier <- mardiaTest(data_with_outlier[, c("project_success", "safety_incidents")])
+mardia_outlier
+modBoxM(data_with_outlier[, c("project_success", "safety_incidents")], data_with_outlier$method)
+
+# If the assumptions are violated after adding the outlier, consider the following:
+# 1. Remove the outlier if it is not relevant to the research question or is a result of data entry error.
+# 2. Transform the data to minimize the impact of the outlier.
+# 3. Use non-parametric alternatives or robust methods that are less sensitive to outliers.
