@@ -1,0 +1,67 @@
+# Load required packages
+library(tidyverse)
+library(car)
+library(MVN)
+library(biotools)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Create dataset
+data <- tibble(
+  method = factor(rep(c("A", "B", "C"), each = 20)),
+  student_age = round(runif(60, min = 18, max = 22)),
+  exam_score = c(rnorm(20, mean = 80, sd = 5),
+                 rnorm(20, mean = 85, sd = 5),
+                 rnorm(20, mean = 90, sd = 5)),
+  participation_score = c(rnorm(20, mean = 50, sd = 10),
+                          rnorm(20, mean = 60, sd = 10),
+                          rnorm(20, mean = 70, sd = 10))
+)
+
+# Inspect the dataset
+head(data)
+
+# Assumption 1 for ANCOVA: Independence of observations
+# Satisfied by experimental design (students randomly assigned to methods)
+
+# Assumption 2 for ANCOVA: Normality of dependent variable within each group, given the covariate
+# Shapiro-Wilk test on residuals from linear regression
+residuals_exam <- lm(exam_score ~ method + student_age, data = data)$residuals
+by(residuals_exam, data$method, shapiro.test)
+
+# Assumption 3 for ANCOVA: Homogeneity of regression slopes
+# Test for interaction between method and student_age
+interaction_exam <- lm(exam_score ~ method * student_age, data = data)
+anova(interaction_exam)
+
+# Assumption 4 for ANCOVA: Homogeneity of variances
+# Levene's test on the residuals
+leveneTest(residuals_exam ~ data$method)
+
+# Assumption 1 for MANCOVA: Independence of observations
+# Satisfied by experimental design (students randomly assigned to methods)
+
+# Assumption 2 for MANCOVA: Multivariate normality
+# Mardia's test on residuals from multiple linear regression
+residuals_both <- data.frame(resid(lm(cbind(exam_score, participation_score) ~ method + student_age, data = data)))
+colnames(residuals_both) <- c("exam_score", "participation_score")
+mardia_residuals <- mardiaTest(residuals_both)
+mardia_residuals
+
+# Assumption 3 for MANCOVA: Homogeneity of regression slopes
+# Test for interaction between method and student_age (multivariate)
+interaction_both <- lm(cbind(exam_score, participation_score) ~ method * student_age, data = data)
+summary(interaction_both)
+
+# Assumption 4 for MANCOVA: Homogeneity of covariance matrices
+# Modified Box's M test on the residuals
+modBoxM(residuals_both, data$method)
+
+# If assumptions are not met, consider the following:
+# 1. Transform the data (e.g., log, square root) to meet the assumptions
+# 2. Use non-parametric alternatives (e.g., Quade test for ANCOVA)
+
+# Example: Non-parametric alternative to ANCOVA (Quade test)
+library(PMCMR)
+quade.test(exam_score ~ method + student_age, data = data)
