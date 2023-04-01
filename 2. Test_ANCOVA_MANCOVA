@@ -1,0 +1,31 @@
+# Load required packages
+library(tidyverse)
+library(car)
+library(mancova)
+
+# Fit ANCOVA model
+model_ancova <- lm(completion_time ~ method + project_budget, data = data)
+
+# ANCOVA summary
+summary_ancova <- anova(model_ancova)
+print(summary_ancova)
+
+# Interpretation of ANCOVA summary:
+# The p-value for the method variable indicates whether there are statistically significant differences 
+# in completion_time between construction methods A, B, and C after adjusting for project_budget.
+# If the p-value is less than 0.05, we would conclude that there is a significant difference in completion_time 
+# between the construction methods.
+
+# Fit MANCOVA model
+model_mancova <- mancova(cbind(completion_time, safety_incidents) ~ method + project_budget, data = data)
+
+# MANCOVA summary
+summary_mancova <- summary(model_mancova, "Wilks")
+print(summary_mancova)
+
+# Interpretation of MANCOVA summary:
+# The p-value for the method variable indicates whether there are statistically significant differences 
+# in the combined dependent variables (completion_time and safety_incidents) between construction methods A, B, and C
+# after adjusting for project_budget.
+# If the p-value is less than 0.05, we would conclude that there is a significant difference in the combined
+# dependent variables between the construction methods.
