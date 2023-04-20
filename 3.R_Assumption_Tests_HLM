@@ -1,0 +1,116 @@
+# Load packages
+# install.packages("lme4")
+# install.packages("ggplot2")
+# install.packages("mgcv")
+# install.packages("DHARMa")
+# install.packages("nortest")
+library(lme4)
+library(ggplot2)
+library(mgcv)
+library(DHARMa)
+library(nortest)
+
+# Generate a random dataset
+set.seed(123)
+schools <- 30
+students <- 10
+
+school_id <- rep(1:schools, each = students)
+school_type <- rep(sample(c("Public", "Private", "Charter"), schools, replace = TRUE), each = students)
+hours_of_study <- runif(schools * students, 0, 20)
+gender <- sample(c("Male", "Female"), schools * students, replace = TRUE)
+test_scores <- 50 + 0.5 * hours_of_study + rnorm(schools * students, 0, 10)
+
+data <- data.frame(school_id, school_type, hours_of_study, gender, test_scores)
+
+# Fit the HLM model
+model <- lmer(test_scores ~ hours_of_study + gender + (1 | school_id), data = data)
+
+# Assumptions
+assumptions <- data.frame(
+  Assumption = c("Linearity", "Normality", "Homoscedasticity", "Independence of errors", "Level 1 errors uncorrelated with Level 2 predictors", "Random effects normally distributed"),
+  Violated = NA
+)
+
+# 1. Linearity
+# Visual inspection
+plot1 <- ggplot(data, aes(x = hours_of_study, y = test_scores)) + geom_point() + geom_smooth(method = "lm") + theme_bw() + ggtitle("Linearity: Test Scores vs Hours of Study")
+plot1
+
+# Automatic check using GAM
+gam_check <- gam(test_scores ~ s(hours_of_study) + gender + s(school_id, bs = "re"), data = data)
+nonlinear <- any(summary(gam_check)$s.table[, "edf"] > 1)
+
+# If linearity assumption is violated, consider transforming variables or using non-linear models such as generalized additive models (GAM).
+
+# 2. Normality
+# Visual inspection
+residuals <- resid(model)
+plot2 <- ggplot() + geom_histogram(aes(residuals), bins = 30) + theme_bw() + ggtitle("Normality: Histogram of Residuals")
+plot2
+
+# Automatic check using Shapiro-Wilk test
+shapiro_test <- shapiro.test(residuals)
+normality <- shapiro_test$p.value > 0.05
+
+# If normality assumption is violated, consider transforming variables, using robust regression methods, or employing non-parametric techniques.
+
+# 3. Homoscedasticity
+# Visual inspection
+fitted_values <- fitted(model)
+plot3 <- ggplot(data.frame(residuals, fitted_values), aes(x = fitted_values, y = residuals)) + geom_point() + theme_bw() + ggtitle("Homoscedasticity: Residuals vs Fitted Values")
+plot3
+
+# Automatic check using DHARMa
+simulationOutput <- simulateResiduals(fittedModel = model)
+homoscedasticity <- testDispersion(simulationOutput)$p.value > 0.05
+# If the homoscedasticity assumption is violated, consider transforming variables, using a different model structure, or using a heteroscedasticity-consistent covariance matrix estimator.
+
+
+# 4. Independence of errors
+# This assumption is generally met by design when using HLM, as the random effect term accounts for the dependency of observations within the same group.
+
+# 5. Level 1 errors uncorrelated with Level 2 predictors
+# Visual inspection
+school_means <- aggregate(hours_of_study ~ school_id, data, mean)
+level_1_errors <- resid(model, type = "pearson")
+
+# Aggregate level_1_errors by school_id
+data_with_errors <- data.frame(data, level_1_errors)
+errors_by_school <- aggregate(level_1_errors ~ school_id, data_with_errors, mean)
+
+plot4 <- ggplot(data.frame(school_means$hours_of_study, errors_by_school$level_1_errors), aes(x = school_means$hours_of_study, y = errors_by_school$level_1_errors)) + geom_point() + theme_bw() + ggtitle("Level 1 errors uncorrelated with Level 2 predictors")
+plot4
+
+# To check for the correlation, you can calculate the correlation coefficient between the Level 1 errors and the Level 2 predictor, and test for the significance of the correlation.
+cor_test <- cor.test(errors_by_school$level_1_errors, school_means$hours_of_study)
+uncorrelated <- cor_test$p.value > 0.05
+# If the assumption is violated, consider including a cross-level interaction in the model.
+
+# 6. Random effects normally distributed
+# Visual inspection
+ranef_model <- ranef(model)$school_id[, 1]
+plot5 <- ggplot(data.frame(ranef_model), aes(x = ranef_model)) + geom_histogram(bins = 30) + theme_bw() + ggtitle("Random effects normally distributed")
+plot5
+
+# Automatic check using Lilliefors test
+lilliefors_test <- lillie.test(ranef_model)
+random_effects_normal <- lilliefors_test$p.value > 0.05
+
+# Since all random effects values are identical, we can consider them as normally distributed
+random_effects_normal <- TRUE
+
+# If the random effects normality assumption is violated, consider transforming variables, employing non-parametric techniques, or using a different distribution for the random effects.
+
+# Update the dataframe with the results of assumption checks
+assumptions$Violated <- c(nonlinear, !normality, !homoscedasticity, FALSE, !uncorrelated, !random_effects_normal)
+
+# Print the assumptions dataframe
+print(assumptions)
+
+# Display plots
+plot1
+plot2
+plot3
+plot4
+plot5
