@@ -1,0 +1,110 @@
+# Load packages
+library(lme4)
+library(ggplot2)
+
+# Generate a random dataset
+set.seed(123)
+schools <- 30
+students <- 10
+
+school_id <- rep(1:schools, each = students)
+school_type <- rep(sample(c("Public", "Private", "Charter"), schools, replace = TRUE), each = students)
+hours_of_study <- runif(schools * students, 0, 20)
+gender <- sample(c("Male", "Female"), schools * students, replace = TRUE)
+test_scores <- 50 + 0.5 * hours_of_study + rnorm(schools * students, 0, 10)
+
+data <- data.frame(school_id, school_type, hours_of_study, gender, test_scores)
+
+# Fit the HLM model
+model <- lmer(test_scores ~ hours_of_study + gender + (1 | school_id), data = data)
+
+# Model summary
+model_summary <- summary(model)
+print(model_summary)
+
+# Plot: Test Scores vs Hours of Study with gender as a color aesthetic
+plot1 <- ggplot(data, aes(x = hours_of_study, y = test_scores, color = gender)) + geom_point() + geom_smooth(method = "lm") + theme_bw() + ggtitle("Test Scores vs Hours of Study by Gender")
+plot1
+
+# Interpretation of fixed effects:
+# The model output provides estimates of the fixed effects, including the intercept (the average test score when hours_of_study is 0 and gender is female) and the coefficients for hours_of_study and genderMale.
+# For each additional hour of study, the test scores increase by the coefficient of hours_of_study (0.4271), on average.
+# The genderMale coefficient (0.1618) indicates the average difference in test scores between male and female students, with a positive value suggesting that male students score higher on average, but the small t-value (0.144) indicates that this difference is not statistically significant.
+
+# Interpretation of random effects:
+# The random effects in the model capture the variance in the intercepts across schools (how much the average test scores differ between schools). The output provides the standard deviation of the random intercepts (0.00), which can be used to understand the variability in test scores across schools.
+# A larger standard deviation indicates a higher variability in test scores across schools, while a smaller standard deviation indicates that the test scores are more similar across schools. In this case, the standard deviation is 0, which suggests that there is no variability in test scores across schools. However, this may be due to the random dataset generated, and in real-life situations, you would expect some variability across schools.
+
+############################################################3
+
+# If the results are as follows;
+# REML criterion at convergence: 2214.1
+# 
+# Scaled residuals: 
+#   Min      1Q  Median      3Q     Max 
+# -2.9661 -0.6689  0.0573  0.6731  3.2633 
+# 
+# Random effects:
+#   Groups    Name        Variance Std.Dev.
+# school_id (Intercept)  0.00    0.00    
+# Residual              94.86    9.74    
+# Number of obs: 300, groups:  school_id, 30
+# 
+# Fixed effects:
+#   Estimate Std. Error t value
+# (Intercept)     49.8131     1.2832  38.820
+# hours_of_study   0.4271     0.1010   4.230
+# genderMale       0.1618     1.1261   0.144
+# 
+# Correlation of Fixed Effects:
+#   (Intr) hrs_f_
+# hors_f_stdy -0.788       
+# genderMale  -0.471  0.049
+# optimizer (nloptwrap) convergence code: 0 (OK)
+# boundary (singular) fit: see help('isSingular')
+
+# The interpretation should be;
+# 
+# The model summary includes information on fixed effects, random effects, and other relevant statistics. 
+# In this specific case, the fixed effects show that for each additional hour of study, the test scores increase by 0.4271 on average. 
+# The genderMale coefficient of 0.1618 indicates that male students score slightly higher on average compared to female students, 
+# but the small t-value (0.144) suggests that this difference is not statistically significant.
+# 
+# Regarding the random effects, the output shows that the standard deviation of the random intercepts is 0.00. 
+# In this case, this means that there is no variability in test scores across schools. However, it's essential to note that 
+# the random dataset generated might not accurately represent real-life situations, where you would expect some variability across schools.
+# # 
+# # The plot visualizes the relationship between test scores and hours of study, with gender as a color aesthetic. 
+# It helps to see the overall trend and explore whether the relationship is linear or not, 
+# and whether there might be any interaction between the hours of study and gender.
+# # 
+# # To further interpret the results, let's look at the model diagnostics:
+# 
+# 1.Scaled residuals: The minimum, 1st quartile, median, 3rd quartile, and maximum of 
+#   the scaled residuals are provided. These statistics can help identify potential outliers or unusual observations. 
+# In this case, the minimum and maximum scaled residuals are -2.9661 and 3.2633, respectively. No extreme values indicate
+# that the model assumptions are not severely violated.
+# 
+# 2.Random effects: The output provides information on the variance components of the random effects. 
+# In this case, the variance component for the school-level intercepts is 0.00, and the residual variance is 94.86.
+# The small variance for school-level intercepts indicates that there is no variability in test scores across schools in 
+# this particular dataset, as mentioned before.
+# 
+# 3.Model fit: The REML (Restricted Maximum Likelihood) criterion at convergence is provided, 
+# which is a measure of the model fit. Smaller values indicate a better fit. 
+# In this case, the REML criterion is 2214.1. You can use this value to compare different models fitted to the same dataset.
+# 
+# 4.Correlations of fixed effects: The output also provides information on the correlations between the fixed effects. 
+# In this case, there is a small positive correlation (0.049) between hours_of_study and genderMale. 
+# This correlation might indicate that there's a slight interaction between hours of study and gender, but it's relatively small 
+# and may not be practically significant.
+# 
+# 5.Singular fit warning: The warning message "boundary (singular) fit: see help('isSingular')" indicates that the 
+# random effects structure might be too complex for the data, leading to a singular fit. In this case, since there is no 
+# variability in the school-level intercepts, the model might not require a random intercept for school_id. However, this 
+# warning could be related to the randomly generated dataset and might not be a concern in real-life situations with more complex data.
+# 
+# In conclusion, the HLM model fitted to the random dataset shows a positive relationship between test scores and hours of study, 
+# with a small, non-significant difference in test scores between male and female students. The random effects structure suggests no
+# variability in test scores across schools, although this may not reflect real-life situations due to the random dataset generated. 
+# The diagnostic plots and statistics help assess the model's assumptions and overall fit.
