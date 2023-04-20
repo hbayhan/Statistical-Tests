@@ -1,4 +1,4 @@
-# Statistical-Tests
+## Statistical-Tests
 When you have a dataset and are looking to analyze relationships among variables, it's essential to choose the appropriate statistical method. The choice depends on the type of data you have, the nature of the research question, and the assumptions that can be made about the data. Here's a brief overview of ANOVA, MANOVA, ANCOVA, MANCOVA, and linear and multiple regression to help you decide which method to use:
 
 ANOVA (Analysis of Variance): Use ANOVA when you want to compare the means of more than two groups or conditions. It is appropriate when you have one continuous dependent variable and one categorical independent variable with three or more levels. ANOVA tests the null hypothesis that there's no difference between group means, and any observed difference is due to chance.
@@ -19,6 +19,11 @@ The number of dependent variables: If you have only one dependent variable, use 
 The type of independent variables: For categorical independent variables, use ANOVA, MANOVA, ANCOVA, or MANCOVA. For continuous independent variables, use linear or multiple regression.
 The presence of covariates: If you want to control for the effects of covariates, use ANCOVA or MANCOVA.
 Ultimately, the choice depends on your research question, the data, and the assumptions that can be made about the data. Remember to check the assumptions of each method (e.g., normality, homogeneity of variance, linearity) before proceeding with the analysis.
+
+# For Hierarchical Linear Models (HLM)
+Hierarchical Linear Modeling (HLM) is a statistical technique used to analyze nested or hierarchical data structures, where observations are nested within groups or clusters. HLM is particularly useful when you want to model the relationship between variables at different levels of analysis, such as students within schools or employees within organizations.
+
+Use HLM when you have nested or hierarchical data and you want to model the relationship between variables at different levels of analysis. HLM allows you to account for the variability in the dependent variable both within and between groups, as well as to explore the effects of group-level predictors on individual-level outcomes.
 
 ## Examples
 
@@ -69,3 +74,15 @@ Independent variables: Hours of study (continuous), gender (categorical with two
 Here, we have a mix of continuous and categorical independent variables (hours of study, gender, and socioeconomic status) to predict a continuous dependent variable (test scores).
 
 In each example involving categorical independent variables (ANOVA, MANOVA, ANCOVA, MANCOVA, and multiple regression), the categorical variable represents distinct groups or categories being compared or used to predict the dependent variable(s).
+
+# HLM Example
+
+Research question: Does the relationship between hours of study and test scores vary across different schools, and do school-level factors (e.g., school resources) explain this variation?
+
+Dependent variable: Test scores (continuous)
+Level 1 independent variable: Hours of study (continuous)
+Level 2 independent variable: School resources (continuous)
+Level 1 unit: Students
+Level 2 unit: Schools
+
+In this example, the independent variables are continuous, and the data is nested with students (Level 1) within schools (Level 2). HLM will help you model the relationship between hours of study and test scores while accounting for the variability in test scores both within and between schools. Additionally, HLM allows you to explore the effects of school-level predictors (e.g., school resources) on individual-level outcomes (test scores).
